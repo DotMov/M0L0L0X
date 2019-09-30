@@ -43,16 +43,16 @@ client.on('message', message => {
     //Checks if command is only usable inside a text channel 
     //and replies with an error message if the message is used in anything but a text channel
     if (command.guildOnly && message.channel.type !== 'text') {
-        return message.reply('THAT COMMAND CANNOT BE EXECUTED INSIDE DIRECT MESSAGES');
+        return message.reply('That command cannot be executed inside of Direct Messages!');
     }
 
     //Checks if command requires arguments
     //and replies with an error message if the user provided incorrect or no arguments
     if (command.args && !args.length) {
-        let reply = `YOU DID NOT PROVIDE ANY ARGUMENTS, ${message.author}`;
+        let reply = `You did not provide any arguments, ${message.author}!`;
 
         if (command.usage) {
-            reply += `\nTHE PROPER USAGE WOULD BE: \`${prefix}${command.name} ${command.usage}\``;
+            reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
         }
 
         return message.channel.send(reply);
@@ -71,7 +71,7 @@ client.on('message', message => {
 
         if (now < expirationTime) {
             const timeLeft = (expirationTime - now) / 1000;
-            return message.reply(`PLEASE WAIT ${timeLeft.toFixed(1)} MORE SECOND(S) BEFORE REUSING THE \`${command.name}\` command.`);
+            return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before using the \`${command.name}\` command!`);
         }
     }
 
@@ -82,7 +82,7 @@ client.on('message', message => {
         command.execute(message, args);
     } catch (error) {
         console.error(error)
-        message.reply("THERE WAS AN ERROR TRYING TO EXECUTE THAT COMMAND");
+        message.reply("There was an error trying to execute that command! Sorry!");
     }
 
 })

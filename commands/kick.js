@@ -7,14 +7,14 @@ module.exports = {
     execute(message, args) {
 
         if (!message.member.hasPermission('KICK_MEMBERS')) {
-            message.reply(" DOES NOT HAVE PERMISSION TO USE THIS COMMAND");
+            message.reply(" you do not have permission to use this command!");
         }
 
         let member = message.mentions.members.first();
         member.kick().then((member) => {
-            message.channel.send(":wave: " + member.displayName + " HAS BEEN KICKED");
+            message.channel.send(":wave: " + member.displayName + " has been kicked!");
         }).catch(() => {
-            message.channel.send("ERROR!");
+            message.channel.send("Error!");
         });
     },
 };

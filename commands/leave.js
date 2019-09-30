@@ -7,7 +7,7 @@ module.exports = {
     execute(message, args) {
 
         if (message.guild.voiceConnection.channel !== message.member.voiceChannel) {
-            message.reply('WE MUST BE IN A VALID VOICE CHANNEL TOGETHER TO USE THIS COMMAND');
+            message.reply(' you have to be in a voice channel with me to use this command!');
             return;
         }
 

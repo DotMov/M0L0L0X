@@ -7,18 +7,14 @@ module.exports = {
     execute(message, args) {
 
         if (!message.member.hasPermission('BAN_MEMBERS')) {
-            message.reply(' DOES NOT HAVE PERMISSION TO USE THIS COMMAND');
-        }
-
-        if (args[0] === 'foo') {
-            return message.channel.send('bar');
+            message.reply(' you do not have permission to use this command!');
         }
 
         let member = message.mentions.members.first();
         member.ban().then((member) => {
-            message.channel.send(":facepalm: " + member.displayName + " HAS BEEN BANNED");
+            message.channel.send(":facepalm: " + member.displayName + " has been banned!");
         }).catch(() => {
-            message.channel.send("ERROR!");
+            message.channel.send("Error!");
         });
     },
 };
