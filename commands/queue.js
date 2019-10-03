@@ -12,13 +12,20 @@ module.exports = {
             return;
         }
 
-        var titles = [];
+        var title;
         var results = "";
 
         for(i = 0; i < servers[message.guild.id].queue.length; i++)
         {
-            let info = await ytdl.getInfo(servers[message.guild.id].queue[i]);
-            results += `\n${i+1}. ${info.title}`;
+            try {
+                let info = await ytdl.getInfo(servers[message.guild.id].queue[i]);
+                title = info.title;
+            }
+            catch {
+                title = "Unable to find the title of this video! Likely because it's blocked by the copyright holder.";
+            }
+
+            results += `\n${i+1}. ${title}`;
         }
 
         message.reply(results);
