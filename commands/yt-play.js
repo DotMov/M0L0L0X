@@ -83,6 +83,7 @@ module.exports = {
             }).catch((error) => {
                 console.log("Encountered an error when attempting to parse playlist");
                 message.channel.send("I was unable to figure out what videos were in that playlist! Playlist skipped!");
+                args.shift();
                 if (args[0]) this.execute(message, args);
             });
         }
@@ -114,8 +115,9 @@ module.exports = {
                                 if (args[0]) this.execute(message, args);
                             }
                         }).catch((error) => {
-                            message.reply("I wasn't able to connect to your voice channel! Mission failed, we'll get 'em next time!");
+                            message.reply(" I wasn't able to connect to your voice channel! Mission failed, we'll get 'em next time!");
                             console.log(`Unable to connect to voice channel \n ${error}`);
+                            return;
                         });
                 }
                 //If the client is already connected to the guild,

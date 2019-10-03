@@ -6,6 +6,11 @@ module.exports = {
     usage: false,
     execute(message, args) {
 
+        if(!message.guild.voiceConnection) {
+            message.reply(" I don't think I'm in a voice channel!");
+            return;
+        }
+
         if (message.guild.voiceConnection.channel !== message.member.voiceChannel) {
             message.reply(' you have to be in a voice channel with me to use this command!');
             return;
@@ -15,7 +20,8 @@ module.exports = {
             let server = servers[message.guild.id];
             server.queue = [];
     
-            server.dispatcher.end();
+            if(server.dispatcher) server.dispatcher.end();
+            else message.guild.voiceConnection.end();
         }
     },
 };
