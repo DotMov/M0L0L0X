@@ -2,7 +2,7 @@ module.exports = {
     name: 'yt-skip',
     description: 'Skips the song currently playing if there is a song next in the queue',
     guildOnly: true,
-    execute(message, args) {
+    execute(message) {
 
         //Check if the sender of the message is in a voice channel
         if(!message.member.voiceChannel) {

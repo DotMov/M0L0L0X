@@ -4,7 +4,7 @@ module.exports = {
     guildOnly: true,
     args: false,
     usage: false,
-    execute(message, args) {
+    execute(message) {
 
         if(!message.guild.voiceConnection) {
             message.reply(" I don't think I'm in a voice channel!");

@@ -4,7 +4,7 @@ module.exports = {
     name: 'queue',
     description: 'Responds with a message containing the entire music queue (if there is one)',
     guildOnly: true,
-    async execute(message, args) {
+    async execute(message) {
 
         if(!message.guild.voiceConnection)
         {

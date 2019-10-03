@@ -4,7 +4,7 @@ module.exports = {
     guildOnly: true,
     args: true,
     usage: '<user>',
-    execute(message, args) {
+    execute(message) {
 
         if (!message.member.hasPermission('BAN_MEMBERS')) {
             message.reply(' you do not have permission to use this command!');
