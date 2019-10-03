@@ -4,42 +4,39 @@ const ytdlDiscord = require('ytdl-core-discord');
 const ytpl = require('ytpl');
 const ytlist = require('youtube-playlist');
 
+function endConnection(connection, server) {
+    delete server.queue;
+    delete servers[message.guild.id];
+    server.dispatcher.end();
+    connection.disconnect();
+}
+
 async function play(connection, message) {
     var server = servers[message.guild.id];
-    try {
-        server.dispatcher = connection.playOpusStream(await ytdlDiscord(server.queue[0], { filter: 'audioonly', highWaterMark: 1 << 25 }));
-    }
-    catch {
-        var title;
-        try {
-            let info = await ytdl.getInfo(server.queue[0]);
-            title = info.title;
-        }
-        catch {
-            title = "Unable to find the title of this video! Likely because it's blocked by the copyright holder.";
-        }
+    server.dispatcher = connection.playOpusStream(await ytdlDiscord(server.queue[0], { filter: 'audioonly', highWaterMark: 1 << 25 }).catch((error) => {
+        console.log("Error when attempting to play video");
+        ytdl.getInfo(server.queue[0]).then(info => {
+            message.channel.send(info.title);
+        }).catch((error) => {
+            message.channel.send("Unable to find the title of this video! Likely because it's blocked by the copyright holder.");
+            console.log(title + '\n' + error);
+        });
         message.channel.send(`There was an error trying to play this video! Skipped! \n${title}`);
         server.queue.shift();
         if (server.queue[0]) {
             play(connection, message);
         }
         else {
-            delete server.queue;
-            delete servers[message.guild.id];
-            server.dispatcher.end();
-            connection.disconnect();
+            endConnection(connection, server);
         }
-    }
+    }));
     server.dispatcher.on("end", function () {
         server.queue.shift();
         if (server.queue[0]) {
             play(connection, message);
         }
         else {
-            delete server.queue;
-            delete servers[message.guild.id];
-            server.dispatcher.end();
-            connection.disconnect();
+            endConnection(connection, server);
         }
     });
 }
@@ -51,9 +48,6 @@ module.exports = {
     args: true,
     usage: '<url>',
     execute(message, args) {
-
-        console.log('Starting new run!');
-
         //Check if the author of the message is in a voice channel
         //If not, reply with an error message and return
         if (!message.member.voiceChannel) {
@@ -70,9 +64,12 @@ module.exports = {
             //let results = ytlist(playlistURL, 'url');
             ytlist(playlistURL, 'url').then(results => {
                 args = results.data.playlist.concat(args);
-                console.log("Playlist parsed");
                 if (args[0]) this.execute(message, args);
                 return;
+            }).catch((error) => {
+                console.log("Encountered an error when attempting to parse playlist");
+                message.channel.send("I was unable to figure out what videos were in that playlist! Playlist skipped!");
+                if (args[0]) this.execute(message, args);
             });
         }
         else {
@@ -82,7 +79,6 @@ module.exports = {
             //If there are no more arguments, return
             let validate = ytdl.validateURL(args[0]);
             if (validate) {
-                console.log("Video validated");
 
                 //Check if the client is already connected to the guild
                 //If not, then connect and create a server entry, initializing the queue
@@ -99,11 +95,14 @@ module.exports = {
                                 let server = servers[message.guild.id];
                                 server.queue.push(args.shift());
                                 console.log("First song added to queue");
-        
+
                                 play(connection, message);
-        
+
                                 if (args[0]) this.execute(message, args);
                             }
+                        }).catch((error) => {
+                            message.reply("I wasn't able to connect to your voice channel! Mission failed, we'll get 'em next time!");
+                            console.log("Unable to connect to voice channel\n" + error);
                         });
                 }
                 //If the client is already connected to the guild,
@@ -111,14 +110,12 @@ module.exports = {
                 //If there are any more arguments, recursively call the command
                 else {
                     let server = servers[message.guild.id];
-                    console.log(`${args[0]} being added to the queue`);
                     server.queue.push(args.shift());
                     if (args[0]) {
                         this.execute(message, args);
                     }
                     else {
                         message.reply(' valid link(s) added to the queue!');
-                        console.log('Links finished being added');
                     }
                 }
             }
