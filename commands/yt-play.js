@@ -4,39 +4,53 @@ const ytdlDiscord = require('ytdl-core-discord');
 const ytpl = require('ytpl');
 const ytlist = require('youtube-playlist');
 
-function endConnection(connection, server) {
-    delete server.queue;
+//Deletes the servers queue and entry in the servers list
+//Ends the dispatcher just in case, and then disconnects from the voice channel
+function endConnection(connection, message) {
+    delete servers[message.guild.id].queue;
     delete servers[message.guild.id];
-    server.dispatcher.end();
     connection.disconnect();
+    return;
 }
 
 async function play(connection, message) {
     var server = servers[message.guild.id];
-    server.dispatcher = connection.playOpusStream(await ytdlDiscord(server.queue[0], { filter: 'audioonly', highWaterMark: 1 << 25 }).catch((error) => {
-        console.log("Error when attempting to play video");
-        ytdl.getInfo(server.queue[0]).then(info => {
-            message.channel.send(info.title);
-        }).catch((error) => {
-            message.channel.send("Unable to find the title of this video! Likely because it's blocked by the copyright holder.");
-            console.log(title + '\n' + error);
-        });
-        message.channel.send(`There was an error trying to play this video! Skipped! \n${title}`);
+
+    //Play video
+    //If there are more entries in the queue, recursively call this function
+    //Otherwise, end the connection
+    try {
+        server.dispatcher = connection.playOpusStream(await ytdlDiscord(server.queue[0], { filter: 'audioonly', highWaterMark: 1 << 25 }));
+    }
+    catch(error) {
+        console.log(`Encountered error when attempting to play video \n ${error}`);
+        message.channel.send(`There was an error trying to play this video! Skipped!`);
         server.queue.shift();
         if (server.queue[0]) {
             play(connection, message);
+            return;
         }
         else {
-            endConnection(connection, server);
+            endConnection(connection, message);
         }
-    }));
+    }
+
+    //Now Playing
+    await ytdl.getInfo(server.queue[0]).then(info => {
+        message.channel.send(`Now Playing: ${info.title}`);
+    }).catch((error) => {
+        message.channel.send("Now Playing: Unable to find the title of this video!");
+        console.log(`Unable to find title of video \n ${error}`);
+    });
+
     server.dispatcher.on("end", function () {
         server.queue.shift();
         if (server.queue[0]) {
             play(connection, message);
+            return;
         }
         else {
-            endConnection(connection, server);
+            endConnection(connection, message);
         }
     });
 }
@@ -87,7 +101,6 @@ module.exports = {
                 if (!message.guild.voiceConnection) {
                     message.member.voiceChannel.join()
                         .then(connection => {
-                            message.reply(" channel successfully joined!");
                             console.log("Channel joined");
                             if (!servers[message.guild.id]) {
                                 servers[message.guild.id] = { queue: [] };
@@ -102,7 +115,7 @@ module.exports = {
                             }
                         }).catch((error) => {
                             message.reply("I wasn't able to connect to your voice channel! Mission failed, we'll get 'em next time!");
-                            console.log("Unable to connect to voice channel\n" + error);
+                            console.log(`Unable to connect to voice channel \n ${error}`);
                         });
                 }
                 //If the client is already connected to the guild,
