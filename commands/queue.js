@@ -4,7 +4,7 @@ module.exports = {
     name: 'queue',
     description: 'Responds with a message containing the entire music queue (if there is one)',
     guildOnly: true,
-    async execute(message) {
+    execute(message) {
 
         if(!message.guild.voiceConnection)
         {
@@ -12,22 +12,23 @@ module.exports = {
             return;
         }
 
-        var title;
         var results = "";
 
-        for(i = 0; i < servers[message.guild.id].queue.length; i++)
-        {
-            try {
-                let info = await ytdl.getInfo(servers[message.guild.id].queue[i]);
-                title = info.title;
-            }
-            catch {
-                title = "Unable to find the title of this video! Likely because it's blocked by the copyright holder.";
-            }
-
-            results += `\n${i+1}. ${title}`;
-        }
-
-        message.reply(results);
+        Promise.all(servers[message.guild.id].queue.map(url => {
+            return ytdl.getInfo(url).then(info => {
+                return info.title;
+            }).catch(error => {
+                console.log(`Unable to find title of video: ${error}`);
+                return "Unable to find the title of this video! Likely because it's blocked by the copyright holder.";
+            })
+        })).then(titles => {
+            titles.forEach( (title, index) => {
+                results += `\n${index+1}. ${title}`;
+            })
+            message.reply(results);
+        }).catch(error => {
+            console.log(error);
+            message.reply(" there was an error when trying to build the queue list! Sorry!");
+        });
     },
 }
