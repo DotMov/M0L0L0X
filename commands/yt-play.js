@@ -43,6 +43,8 @@ async function play(connection, message) {
         console.log(`Unable to find title of video \n ${error}`);
     });
 
+    //When the song ends, play the next song in the queue if there is one
+    //If the queue is empty, end the connection
     server.dispatcher.on("end", function () {
         server.queue.shift();
         if (server.queue[0]) {

@@ -6,6 +6,7 @@ module.exports = {
     guildOnly: true,
     execute(message) {
 
+        //Checks if the client is connected to the same voice channel the user is in
         if(!message.guild.voiceConnection)
         {
             message.reply(' there is no music currently playing!');
@@ -14,6 +15,8 @@ module.exports = {
 
         var results = "";
 
+        //Uses ytdl.getInfo to find the titles of all items in the queue first
+        //Then puts those titles into a string to be output for the user
         Promise.all(servers[message.guild.id].queue.map(url => {
             return ytdl.getInfo(url).then(info => {
                 return info.title;
